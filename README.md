@@ -122,13 +122,20 @@ func main() {
 
 ### Initilization options
 
+#### monoflake.WithNodeBits
+
 ```
 # monoflake.WithNodeBits sets the max node bits to 8 which modules the node id with 256 limits the val to [0, 256).
 # maximum node bits allowed is 2^13, you can go up to 13 by setting it
 # You can set node id between 8 to 13 bits inclusive, the rest will be automatically used for sequencer.
 monoflake.New(node, monoflake.WithNodeBits(13), ...)
+```
 
-# monoflake.WithEpoch(t) sets the epoch start time, minimum epoch value is 2024-06-01 00:00:00 UTC
+#### monoflake.WithEpoch
+
+```
+# monoflake.WithEpoch sets the epoch start time, minimum epoch value is 2024-06-01 00:00:00 UTC.
+
 epoch := time.Unix(...)
 
 monoflake.New(node, monoflake.WithEpoch(epoch), ...)
@@ -144,10 +151,12 @@ monoflake.New(node, monoflake.WithEpoch(epoch), ...)
 ```
 
 ### Max sequencer case
+
 When the sequencer reaches to maximum value in the same milliseconds then milliseconds increased automatically and the
 sequence set to 0.
 
 ### Thread safety
+
 Thread safety achieved with mutex locks.
 
 ## Features
