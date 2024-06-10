@@ -19,7 +19,7 @@ func ExampleMonoFlake_Next() {
 	// true
 }
 
-func ExampleMonoFlake_NextBase62() {
+func ExampleID_String() {
 	var nodeID uint16 = 19
 	tid, err := monoflake.New(nodeID)
 
@@ -31,7 +31,7 @@ func ExampleMonoFlake_NextBase62() {
 	// 11
 }
 
-func ExampleMonoFlake_NextBytes() {
+func ExampleID_Bytes() {
 	var nodeID uint16 = 19
 	tid, err := monoflake.New(nodeID)
 

@@ -31,7 +31,6 @@ package uniqid
 
 // Import packages
 import (
-	"fmt"
 	"github.com/mustafaturan/monoflake"
 )
 
@@ -62,7 +61,7 @@ func Generate() int64 {
 	return m.Next().Int64()
 }
 
-func GeneateBytes() [11]byte {
+func GeneateBytes() []byte {
 	return m.Next().Bytes()
 }
 
