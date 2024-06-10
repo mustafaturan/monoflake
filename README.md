@@ -42,7 +42,7 @@ func init() {
 	m = newIDGenerator()
 }
 
-func newIDGenerator() monoflake.MonoFlake {
+func newIDGenerator() *monoflake.MonoFlake {
 	// Fetch your node id from a config server or generate from MAC/IP address
 	node := uint16(0)
 
