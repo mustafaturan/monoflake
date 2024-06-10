@@ -8,12 +8,12 @@ import (
 
 func ExampleMonoFlake_Next() {
 	var nodeID uint16 = 19
-	tid, err := monoflake.New(nodeID)
+	mf, err := monoflake.New(nodeID)
 
 	if err != nil {
 		panic(err)
 	}
-	i1, i2 := tid.Next(), tid.Next()
+	i1, i2 := mf.Next(), mf.Next()
 	fmt.Println(i1 < i2)
 	// Output:
 	// true
@@ -21,24 +21,24 @@ func ExampleMonoFlake_Next() {
 
 func ExampleID_String() {
 	var nodeID uint16 = 19
-	tid, err := monoflake.New(nodeID)
+	mf, err := monoflake.New(nodeID)
 
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(len(tid.Next().String()))
+	fmt.Println(len(mf.Next().String()))
 	// Output:
 	// 11
 }
 
 func ExampleID_Bytes() {
 	var nodeID uint16 = 19
-	tid, err := monoflake.New(nodeID)
+	mf, err := monoflake.New(nodeID)
 
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(len(tid.Next().Bytes()))
+	fmt.Println(len(mf.Next().Bytes()))
 	// Output:
 	// 11
 }

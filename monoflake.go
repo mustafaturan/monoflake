@@ -10,7 +10,7 @@ predictable and incremental 64 bits (8bytes) unique id generator
 
 The `monoflake` package provides sequences based on the `monotonic` time which
 represents the absolute elapsed wall-clock time since some arbitrary, fixed
-point in the past. It isn't affected by changes in the system time-of-day clock.
+point in the pasmf. It isn't affected by changes in the system time-of-day clock.
 
 # Epoch time
 
@@ -82,34 +82,34 @@ const (
 // WithMaxSequenceBits sets the maximum number of bits for node identifier and reserves the rest for sequence number
 func WithNodeBits(bits int) Option {
 	nodeBits := int64(bits)
-	return func(t *MonoFlake) error {
+	return func(mf *MonoFlake) error {
 		if nodeBits < minNodeBits {
 			return ErrNodeBitsLowerThanMin
 		}
 		if nodeBits > reservedAllocationBits-minSequenceBits {
 			return ErrNodeBitsGreaterThanMax
 		}
-		t.nodeBits = nodeBits
-		t.maxSequence = 2 << (reservedAllocationBits - nodeBits - 1)
+		mf.nodeBits = nodeBits
+		mf.maxSequence = 2 << (reservedAllocationBits - nodeBits - 1)
 		return nil
 	}
 }
 
 // WithEpoch sets the epoch time for the generator
 func WithEpoch(epoch time.Time) Option {
-	return func(t *MonoFlake) error {
+	return func(mf *MonoFlake) error {
 		if epoch.Unix() < minEpoch {
 			return ErrEpochTooEarly
 		}
-		t.epoch = epoch
+		mf.epoch = epoch
 		return nil
 	}
 }
 
 // WithNodeID sets the node identifier for the generator
 func withNodeID(nodeID int64) Option {
-	return func(t *MonoFlake) error {
-		t.nodeID = nodeID % (2 << (t.nodeBits - 1))
+	return func(mf *MonoFlake) error {
+		mf.nodeID = nodeID % (2 << (mf.nodeBits - 1))
 		return nil
 	}
 }
@@ -122,7 +122,7 @@ func withNodeID(nodeID int64) Option {
 // New creates a new MonoFlake generator
 func New(nodeID uint16, opts ...Option) (*MonoFlake, error) {
 	epoch := time.Unix(minEpoch, 0)
-	tid := MonoFlake{
+	mf := MonoFlake{
 		epoch:       epoch,
 		maxSequence: defaultMaxSequence,
 		nodeBits:    defaultReservedNodeBits,
@@ -130,20 +130,20 @@ func New(nodeID uint16, opts ...Option) (*MonoFlake, error) {
 	}
 	opts = append(opts, withNodeID(int64(nodeID)))
 	for _, opt := range opts {
-		if err := opt(&tid); err != nil {
+		if err := opt(&mf); err != nil {
 			return nil, err
 		}
 	}
-	return &tid, nil
+	return &mf, nil
 }
 
 // Next generates a new unique int64 ID
-func (t *MonoFlake) Next() ID {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+func (mf *MonoFlake) Next() ID {
+	mf.mu.Lock()
+	defer mf.mu.Unlock()
 
-	seq, ms := t.sequence, t.millisec
-	since := time.Since(t.epoch).Milliseconds()
+	seq, ms := mf.sequence, mf.millisec
+	since := time.Since(mf.epoch).Milliseconds()
 
 	if since < ms {
 		since = ms
@@ -153,13 +153,13 @@ func (t *MonoFlake) Next() ID {
 	nextMs := since
 
 	nextSeq := seq + 1
-	if nextSeq >= t.maxSequence {
+	if nextSeq >= mf.maxSequence {
 		nextSeq = 0
 		nextMs++
 	}
 
-	t.millisec = nextMs
-	t.sequence = nextSeq
+	mf.millisec = nextMs
+	mf.sequence = nextSeq
 
-	return ID(since<<reservedAllocationBits | seq<<t.nodeBits | t.nodeID)
+	return ID(since<<reservedAllocationBits | seq<<mf.nodeBits | mf.nodeID)
 }

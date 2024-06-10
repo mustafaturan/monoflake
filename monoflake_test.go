@@ -58,24 +58,24 @@ func TestNew(t *testing.T) {
 func TestNext(t *testing.T) {
 	// test for all possible node bits
 	for i := 8; i < 14; i++ {
-		tid, _ := New(100, WithNodeBits(i))
+		mf, _ := New(100, WithNodeBits(i))
 		t.Run("generates greater sequences on each call until max sequence", func(t *testing.T) {
 			t.Parallel()
-			for i := 0; i < int(tid.maxSequence)*250; i++ {
-				tid1, tid2 := tid.Next(), tid.Next()
-				if tid1 >= tid2 {
+			for i := 0; i < int(mf.maxSequence)*250; i++ {
+				id1, id2 := mf.Next(), mf.Next()
+				if id1 >= id2 {
 					debug := map[string]int64{
-						"since":     time.Since(tid.epoch).Milliseconds(),
-						"max_seq":   tid.maxSequence,
-						"time1":     tid1.Since(),
-						"time2":     tid2.Since(),
-						"sequence1": tid1.Sequence(tid.nodeBits),
-						"sequence2": tid2.Sequence(tid.nodeBits),
-						"node_id1":  tid1.NodeID(tid.nodeBits),
-						"node_id2":  tid2.NodeID(tid.nodeBits),
+						"since":     time.Since(mf.epoch).Milliseconds(),
+						"max_seq":   mf.maxSequence,
+						"time1":     id1.Since(),
+						"time2":     id2.Since(),
+						"sequence1": id1.Sequence(mf.nodeBits),
+						"sequence2": id2.Sequence(mf.nodeBits),
+						"node_id1":  id1.NodeID(mf.nodeBits),
+						"node_id2":  id2.NodeID(mf.nodeBits),
 						"i":         int64(i),
 					}
-					t.Errorf("Next(): %d >= Next(): %d %v", tid1, tid2, debug)
+					t.Errorf("Next(): %d >= Next(): %d %v", id1, id2, debug)
 				}
 			}
 		})

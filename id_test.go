@@ -27,19 +27,19 @@ func TestInt64(t *testing.T) {
 }
 
 func TestBytes(t *testing.T) {
-	tid, _ := New(3843)
-	tid1, tid2 := tid.Next(), tid.Next()
+	mf, _ := New(3843)
+	id1, id2 := mf.Next(), mf.Next()
 
 	t.Run("generates greater sequences on each call", func(t *testing.T) {
 		t.Parallel()
-		if bytes.Compare(tid1.Bytes()[:], tid2.Bytes()[:]) >= 0 {
-			t.Errorf("Bytes(): %s >= Bytes(): %s", tid1, tid2)
+		if bytes.Compare(id1.Bytes()[:], id2.Bytes()[:]) >= 0 {
+			t.Errorf("Bytes(): %s >= Bytes(): %s", id1, id2)
 		}
 	})
 
 	t.Run("generates 11 bytes sequences", func(t *testing.T) {
 		t.Parallel()
-		results := [][]byte{tid1.Bytes()[:], tid2.Bytes()[:]}
+		results := [][]byte{id1.Bytes()[:], id2.Bytes()[:]}
 		for _, r := range results {
 			if len(r) != 11 {
 				t.Errorf("Bytes(): %s couldn't produce 11 bytes", r)
@@ -49,20 +49,20 @@ func TestBytes(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
-	tid, _ := New(3843)
-	tid1 := tid.Next()
-	tid2 := tid.Next()
+	mf, _ := New(3843)
+	id1 := mf.Next()
+	id2 := mf.Next()
 
 	t.Run("generates greater sequences on each call", func(t *testing.T) {
 		t.Parallel()
-		if strings.Compare(tid1.String(), tid2.String()) >= 0 {
-			t.Errorf("String(): %s (%d) >= String(): %s (%d)", tid1, int64(tid1), tid2, int64(tid2))
+		if strings.Compare(id1.String(), id2.String()) >= 0 {
+			t.Errorf("String(): %s (%d) >= String(): %s (%d)", id1, int64(id1), id2, int64(id2))
 		}
 	})
 
 	t.Run("generates 11 bytes string sequences", func(t *testing.T) {
 		t.Parallel()
-		results := []string{tid1.String(), tid2.String()}
+		results := []string{id1.String(), id2.String()}
 		for _, r := range results {
 			if len(r) != 11 {
 				t.Errorf("String(): %s couldn't produce 11 bytes string", r)
