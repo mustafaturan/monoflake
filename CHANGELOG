@@ -1,0 +1,5 @@
+v1.1.0
+- Add reverse mapper base62 string to ID function
+
+v1.0.0
+- Init for opensource
