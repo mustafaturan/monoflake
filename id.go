@@ -44,6 +44,15 @@ func (id ID) NodeID(nodeBits int64) int64 {
 	return id.Int64() & mask
 }
 
+// IDFromBase62 is a helper fn that converts Base62 encoded string to ID
+func IDFromBase62(base62 string) ID {
+	var id int64
+	for _, r := range base62 {
+		id = id*62 + fromBase62RuneToInt64(r)
+	}
+	return ID(id)
+}
+
 // ToBase62WithPaddingZeros converts int types to Base62 encoded byte array
 // with padding zeros
 func toBase62WithPaddingZeros(u uint64, length int) []byte {
@@ -67,4 +76,17 @@ func toBase62WithPaddingZeros(u uint64, length int) []byte {
 		a[i] = base62Mapping[0]
 	}
 	return a[i:]
+}
+
+func fromBase62RuneToInt64(char rune) int64 {
+	if char >= '0' && char <= '9' {
+		return int64(char - '0')
+	}
+	if char >= 'A' && char <= 'Z' {
+		return int64(char - 'A' + 10)
+	}
+	if char >= 'a' && char <= 'z' {
+		return int64(char - 'a' + 36)
+	}
+	return 0
 }
