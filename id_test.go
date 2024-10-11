@@ -131,6 +131,27 @@ func TestNodeID(t *testing.T) {
 	}
 }
 
+func TestIDFromBase62(t *testing.T) {
+	tests := []struct {
+		base62 string
+		want   int64
+	}{
+		{"00000000001", 1},
+		{"11", 63},
+		{"020", 124},
+		{"0021", 125},
+		{"AzL8n0Y58m7", 1<<63 - 1},
+	}
+
+	msg := "IDFromBase62(%s) = %d, but returned %d"
+	for _, test := range tests {
+		got := IDFromBase62(test.base62).Int64()
+		if got != test.want {
+			t.Errorf(msg, test.base62, test.want, got)
+		}
+	}
+}
+
 func TestToBase62WithPaddingZeros(t *testing.T) {
 	tests := []struct {
 		val     uint64
@@ -141,6 +162,7 @@ func TestToBase62WithPaddingZeros(t *testing.T) {
 		{63, 2, "11"},
 		{124, 3, "020"},
 		{125, 4, "0021"},
+		{1<<63 - 1, 11, "AzL8n0Y58m7"},
 		{1<<64 - 1, 11, "LygHa16AHYF"},
 	}
 
@@ -149,6 +171,17 @@ func TestToBase62WithPaddingZeros(t *testing.T) {
 		got := toBase62WithPaddingZeros(test.val, test.padding)
 		if string(got) != test.want {
 			t.Errorf(msg, test.val, test.padding, test.want, string(got))
+		}
+	}
+}
+
+func TestFromBase62RuneToInt64(t *testing.T) {
+	msg := "fromBase62RuneToInt64(%s) = %d, but returned %d"
+	for _, r := range base62Mapping {
+		got := fromBase62RuneToInt64(r)
+		want := int64(strings.IndexRune(base62Mapping, r))
+		if got != want {
+			t.Errorf(msg, string(r), want, got)
 		}
 	}
 }
