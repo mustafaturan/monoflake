@@ -232,6 +232,7 @@ func TestFromBase62RuneToInt64(t *testing.T) {
 	}
 
 	got = fromBase62RuneToInt64('!')
+	want = 0
 	if got != want {
 		t.Errorf(msg, string('!'), want, got)
 	}
