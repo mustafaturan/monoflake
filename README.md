@@ -201,12 +201,18 @@ Results:
 goos: darwin
 goarch: arm64
 pkg: github.com/mustafaturan/monoflake
-BenchmarkNext-8                 10000000                48.66 ns/op            0 B/op          0 allocs/op
-BenchmarkNextCompare-8          10000000                92.34 ns/op            0 B/op          0 allocs/op
-BenchmarkNextBase62-8           10000000                51.08 ns/op            0 B/op          0 allocs/op
-BenchmarkNextBytes-8            10000000                29.26 ns/op            0 B/op          0 allocs/op
+cpu: Apple M2
+BenchmarkNext-8                                 10000000                49.09 ns/op            0 B/op          0 allocs/op
+BenchmarkNextWithEpoch-8                        10000000                29.28 ns/op            0 B/op          0 allocs/op
+BenchmarkNextCompare-8                          10000000                93.40 ns/op            0 B/op          0 allocs/op
+BenchmarkNextBase62-8                           10000000                54.45 ns/op            0 B/op          0 allocs/op
+BenchmarkNextBase62WithEpoch-8                  10000000                33.21 ns/op            0 B/op          0 allocs/op
+BenchmarkNextBytes-8                            10000000                52.82 ns/op            0 B/op          0 allocs/op
+BenchmarkNextBytesWithEpoch-8                   10000000                31.72 ns/op            0 B/op          0 allocs/op
+BenchmarkNextBigEndianBytes-8                   10000000                48.40 ns/op            0 B/op          0 allocs/op
+BenchmarkNextBigEndianBytesWithEpoch-8          10000000                31.73 ns/op            0 B/op          0 allocs/op
 PASS
-ok      github.com/mustafaturan/monoflake       2.442s
+ok      github.com/mustafaturan/monoflake       4.427s
 ```
 
 ## Contributing
