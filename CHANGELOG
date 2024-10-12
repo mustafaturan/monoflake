@@ -1,3 +1,6 @@
+v1.2.0
+- Add big endian encoding/decoding helper fn for ID to reduce size on bytes conversion
+
 v1.1.0
 - Add reverse mapper base62 string to ID function
 
