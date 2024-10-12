@@ -16,6 +16,15 @@ func BenchmarkNext(b *testing.B) {
 	}
 }
 
+func BenchmarkNextWithEpoch(b *testing.B) {
+	b.ReportAllocs()
+
+	mf, _ := monoflake.New(0, monoflake.WithEpoch(time.Now()))
+	for n := 0; n < b.N; n++ {
+		_ = mf.Next()
+	}
+}
+
 func BenchmarkNextCompare(b *testing.B) {
 	b.ReportAllocs()
 
@@ -41,11 +50,47 @@ func BenchmarkNextBase62(b *testing.B) {
 	}
 }
 
+func BenchmarkNextBase62WithEpoch(b *testing.B) {
+	b.ReportAllocs()
+
+	mf, _ := monoflake.New(0, monoflake.WithEpoch(time.Now()))
+	for n := 0; n < b.N; n++ {
+		_ = mf.Next().String()
+	}
+}
+
 func BenchmarkNextBytes(b *testing.B) {
+	b.ReportAllocs()
+
+	mf, _ := monoflake.New(0)
+	for n := 0; n < b.N; n++ {
+		_ = mf.Next().Bytes()
+	}
+}
+
+func BenchmarkNextBytesWithEpoch(b *testing.B) {
 	b.ReportAllocs()
 
 	mf, _ := monoflake.New(0, monoflake.WithEpoch(time.Now()))
 	for n := 0; n < b.N; n++ {
 		_ = mf.Next().Bytes()
+	}
+}
+
+func BenchmarkNextBigEndianBytes(b *testing.B) {
+	b.ReportAllocs()
+
+	mf, _ := monoflake.New(0)
+	for n := 0; n < b.N; n++ {
+		_ = mf.Next().BigEndianBytes()
+	}
+}
+
+func BenchmarkNextBigEndianBytesWithEpoch(b *testing.B) {
+	b.ReportAllocs()
+
+	mf, _ := monoflake.New(0, monoflake.WithEpoch(time.Now()))
+	for n := 0; n < b.N; n++ {
+		_ = mf.Next().BigEndianBytes()
 	}
 }

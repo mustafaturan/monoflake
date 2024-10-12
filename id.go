@@ -16,14 +16,22 @@ func (id ID) Int64() int64 {
 	return int64(id)
 }
 
-// Bytes returns the byte array of the ID
+// BigEndianBytes returns 8 bytes array of the ID as big endian format
+func (id ID) BigEndianBytes() []byte {
+	v := fromInt64ToBytes(id.Int64())
+	return v[:]
+}
+
+// Bytes returns 11 bytes array of the ID based on base62 encoding
 func (id ID) Bytes() []byte {
-	return toBase62WithPaddingZeros(uint64(id), 11)
+	v := toBase62WithPaddingZeros(uint64(id))
+	return v[:]
 }
 
 // String returns the Base62 encoded string of the ID
 func (id ID) String() string {
-	return string(toBase62WithPaddingZeros(uint64(id), 11))
+	v := toBase62WithPaddingZeros(uint64(id))
+	return string(v[:])
 }
 
 // Since returns the milliseconds since epoch of the ID
@@ -45,17 +53,34 @@ func (id ID) NodeID(nodeBits int64) int64 {
 }
 
 // IDFromBase62 is a helper fn that converts Base62 encoded string to ID
+// returns -1 on overflow
 func IDFromBase62(base62 string) ID {
 	var id int64
 	for _, r := range base62 {
 		id = id*62 + fromBase62RuneToInt64(r)
+		if id < 0 {
+			return -1
+		}
+	}
+	return ID(id)
+}
+
+// IDFromBigEndianBytes is a helper fn that converts big endian bytes to ID
+// returns -1 on overflow
+func IDFromBigEndianBytes(b []byte) ID {
+	var id int64
+	for _, r := range b {
+		id = id*256 + int64(r)
+		if id < 0 {
+			return -1
+		}
 	}
 	return ID(id)
 }
 
 // ToBase62WithPaddingZeros converts int types to Base62 encoded byte array
 // with padding zeros
-func toBase62WithPaddingZeros(u uint64, length int) []byte {
+func toBase62WithPaddingZeros(u uint64) [11]byte {
 	const size = 11 // largest uint64 in base62 occupies 11 bytes
 	var a [size]byte
 	i := size
@@ -71,11 +96,11 @@ func toBase62WithPaddingZeros(u uint64, length int) []byte {
 	// when u < maxBase62
 	i--
 	a[i] = base62Mapping[u]
-	for i > size-length {
+	for i > 0 {
 		i--
 		a[i] = base62Mapping[0]
 	}
-	return a[i:]
+	return a
 }
 
 func fromBase62RuneToInt64(char rune) int64 {
@@ -89,4 +114,13 @@ func fromBase62RuneToInt64(char rune) int64 {
 		return int64(char - 'a' + 36)
 	}
 	return 0
+}
+
+func fromInt64ToBytes(n int64) [8]byte {
+	const size = 8
+	var b [size]byte
+	for i := 0; i < size; i++ {
+		b[size-1-i] = byte(n >> (i * 8))
+	}
+	return b
 }
