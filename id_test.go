@@ -2,6 +2,7 @@ package monoflake
 
 import (
 	"bytes"
+	"encoding/binary"
 	"strings"
 	"testing"
 )
@@ -21,6 +22,26 @@ func TestInt64(t *testing.T) {
 	for _, test := range tests {
 		got := test.id.Int64()
 		if got != test.want {
+			t.Errorf(msg, test.id, test.want, got)
+		}
+	}
+}
+
+func TestBigEndianBytes(t *testing.T) {
+	tests := []struct {
+		id   ID
+		want []byte
+	}{
+		{ID(0), []byte{0, 0, 0, 0, 0, 0, 0, 0}},
+		{ID(1), []byte{0, 0, 0, 0, 0, 0, 0, 1}},
+		{ID(3263530505704195), []byte{0, 11, 152, 41, 232, 129, 147, 3}},
+		{ID(3263530505704640), []byte{0, 11, 152, 41, 232, 129, 148, 192}},
+	}
+
+	msg := "BigEndianBytes(%d) = %v, but returned %v"
+	for _, test := range tests {
+		got := test.id.BigEndianBytes()
+		if !bytes.Equal(got, test.want) {
 			t.Errorf(msg, test.id, test.want, got)
 		}
 	}
@@ -141,6 +162,8 @@ func TestIDFromBase62(t *testing.T) {
 		{"020", 124},
 		{"0021", 125},
 		{"AzL8n0Y58m7", 1<<63 - 1},
+		{"ZZZZZZZZZZZ", -1},
+		{"ZZZZZZZZZZZZ", -1},
 	}
 
 	msg := "IDFromBase62(%s) = %d, but returned %d"
@@ -152,36 +175,92 @@ func TestIDFromBase62(t *testing.T) {
 	}
 }
 
+func TestIDFromBigEndianBytes(t *testing.T) {
+	tests := []struct {
+		bigEndian []byte
+		want      int64
+	}{
+		{[]byte{0, 0, 0, 0, 0, 0, 0, 1}, 1},
+		{[]byte{0, 0, 0, 0, 0, 0, 0, 63}, 63},
+		{[]byte{0, 0, 0, 0, 0, 0, 0, 124}, 124},
+		{[]byte{0, 0, 0, 0, 0, 0, 0, 125}, 125},
+		{[]byte{127, 255, 255, 255, 255, 255, 255, 255}, 1<<63 - 1},
+		{[]byte{255, 255, 255, 255, 255, 255, 255, 255}, -1},
+		{[]byte{255, 255, 255, 255, 255, 255, 255, 255, 255}, -1},
+	}
+
+	msg := "IDFromBigEndianBytes(%s) = %d, but returned %d"
+	for _, test := range tests {
+		got := IDFromBigEndianBytes(test.bigEndian).Int64()
+		if got != test.want {
+			t.Errorf(msg, test.bigEndian, test.want, got)
+		}
+	}
+}
+
 func TestToBase62WithPaddingZeros(t *testing.T) {
 	tests := []struct {
-		val     uint64
-		padding int
-		want    string
+		val  uint64
+		want string
 	}{
-		{1, 11, "00000000001"},
-		{63, 2, "11"},
-		{124, 3, "020"},
-		{125, 4, "0021"},
-		{1<<63 - 1, 11, "AzL8n0Y58m7"},
-		{1<<64 - 1, 11, "LygHa16AHYF"},
+		{1, "00000000001"},
+		{63, "00000000011"},
+		{124, "00000000020"},
+		{125, "00000000021"},
+		{1<<63 - 1, "AzL8n0Y58m7"},
+		{1<<64 - 1, "LygHa16AHYF"},
 	}
 
 	msg := "toBase62WithPaddingZeros(%d, %d) = %v, but returned %v"
 	for _, test := range tests {
-		got := toBase62WithPaddingZeros(test.val, test.padding)
-		if string(got) != test.want {
-			t.Errorf(msg, test.val, test.padding, test.want, string(got))
+		got := toBase62WithPaddingZeros(test.val)
+		if string(got[:]) != test.want {
+			t.Errorf(msg, test.val, test.want, string(got[:]))
 		}
 	}
 }
 
 func TestFromBase62RuneToInt64(t *testing.T) {
+	var want, got int64
 	msg := "fromBase62RuneToInt64(%s) = %d, but returned %d"
 	for _, r := range base62Mapping {
-		got := fromBase62RuneToInt64(r)
-		want := int64(strings.IndexRune(base62Mapping, r))
+		got = fromBase62RuneToInt64(r)
+		want = int64(strings.IndexRune(base62Mapping, r))
 		if got != want {
 			t.Errorf(msg, string(r), want, got)
+		}
+	}
+
+	got = fromBase62RuneToInt64('!')
+	if got != want {
+		t.Errorf(msg, string('!'), want, got)
+	}
+}
+
+func TestFromInt64ToBytes(t *testing.T) {
+	tests := []struct {
+		want []byte
+		val  int64
+	}{
+		{[]byte{0, 0, 0, 0, 0, 0, 0, 1}, 1},
+		{[]byte{0, 0, 0, 0, 0, 0, 0, 63}, 63},
+		{[]byte{0, 0, 0, 0, 0, 0, 0, 124}, 124},
+		{[]byte{0, 0, 0, 0, 0, 0, 0, 125}, 125},
+		{[]byte{127, 255, 255, 255, 255, 255, 255, 255}, 1<<63 - 1},
+		{[]byte{255, 255, 255, 255, 255, 255, 255, 255}, -1},
+	}
+
+	msg := "IDFromBigEndianBytes(%s) = %d, but returned %d"
+	for _, test := range tests {
+		got := fromInt64ToBytes(test.val)
+		if !bytes.Equal(got[:], test.want) {
+			t.Errorf(msg, test.val, test.want, got)
+		}
+
+		buf := make([]byte, 0, 8)
+		comparable := binary.BigEndian.AppendUint64(buf[0:], uint64(test.val))
+		if !bytes.Equal(got[:], comparable) {
+			t.Errorf(msg, test.val, comparable, got)
 		}
 	}
 }
